@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - AI Code Review</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { darkMode: 'class', theme: { extend: { colors: { brand: { 500: '#3b82f6', 600: '#2563eb' } } } } }</script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
+    <style>
+        #editor-container { height: calc(100vh - 176px); min-height: 400px; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100 flex flex-col h-screen overflow-hidden">
+
+    <!-- Authenticated Navigation -->
+    <nav class="h-16 flex-shrink-0 flex items-center justify-between px-6 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 z-50">
+        <div class="flex items-center gap-6">
+            <a href="index.html" class="flex items-center gap-2">
+                <i data-lucide="bot" class="text-brand-500 w-8 h-8"></i>
+                <span class="font-bold text-xl hidden sm:block">CodeReview</span>
+            </a>
+            <div class="flex items-center gap-4 text-sm font-medium">
+                <a href="dashboard.html" class="text-brand-600 dark:text-brand-400">Dashboard</a>
+                <a href="history.html" class="text-gray-500 hover:text-gray-900 dark:hover:text-white">History</a>
+            </div>
+        </div>
+        
+        <div class="flex items-center gap-4">
+            <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800">
+                <i data-lucide="sun" id="theme-icon"></i>
+            </button>
+            <div class="relative group">
+                <div class="w-8 h-8 rounded-full bg-brand-500 flex items-center justify-center text-white text-sm font-bold cursor-pointer">JD</div>
+                <div class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-800 hidden group-hover:block">
+                    <a href="settings.html" class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 border-b border-gray-100 dark:border-gray-800">Settings</a>
+                    <a href="index.html" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-50 dark:hover:bg-gray-800">Sign out</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Toolbar -->
+    <div class="h-12 border-b border-gray-200 dark:border-gray-800 flex items-center px-4 bg-gray-50 dark:bg-gray-950/50">
+        <div class="flex items-center gap-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-md px-2 py-1 shadow-sm">
+            <i data-lucide="code-2" class="w-4 h-4 text-gray-500"></i>
+            <select id="language-select" class="bg-transparent text-sm focus:outline-none cursor-pointer">
+                <option value="javascript">JavaScript</option>
+                <option value="python">Python</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Main Workspace -->
+    <div class="flex-1 flex overflow-hidden">
+        <!-- Editor -->
+        <div class="flex-1 flex flex-col border-r border-gray-200 dark:border-gray-800">
+            <div id="editor-container" class="w-full"></div>
+            <div class="h-16 border-t border-gray-200 dark:border-gray-800 flex justify-between items-center px-4 bg-white dark:bg-gray-900">
+                <div id="status" class="text-sm text-gray-500">Ready</div>
+                <button id="submit-btn" onclick="runReview()" class="bg-brand-600 hover:bg-brand-500 text-white px-6 py-2 rounded-lg font-medium shadow-md transition flex items-center gap-2">
+                    <i data-lucide="sparkles" class="w-4 h-4"></i> Review Code
+                </button>
+            </div>
+        </div>
+
+        <!-- Results Pane -->
+        <div id="results-pane" class="w-[450px] bg-gray-50 dark:bg-gray-950 overflow-y-auto hidden flex-col p-6">
+            <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><i data-lucide="clipboard-check" class="text-brand-500"></i> Results</h2>
+            <div class="bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm mb-6">
+                <div class="flex justify-between mb-2">
+                    <span class="font-semibold">Score</span>
+                    <span class="font-bold text-red-500">65/100</span>
+                </div>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Security flaw detected. Avoid using eval().</p>
+            </div>
+            
+            <div class="border-l-4 border-red-500 bg-red-50 dark:bg-red-900/10 p-4 rounded-r-xl border-y border-r border-gray-200 dark:border-gray-800">
+                <span class="text-[10px] font-bold uppercase px-2 py-1 bg-red-100 text-red-800 dark:bg-red-900/50 rounded mb-2 inline-block">CRITICAL</span>
+                <p class="text-sm text-red-900 dark:text-red-200 font-medium mb-2">Usage of eval() introduces arbitrary code execution.</p>
+                <div class="bg-white/60 dark:bg-black/30 p-2 rounded text-xs font-mono">Remove eval entirely.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        let editor;
+        
+        // Theme init
+        let isDark = true;
+        document.getElementById('theme-toggle').addEventListener('click', () => {
+            isDark = !isDark;
+            document.documentElement.classList.toggle('dark', isDark);
+            document.getElementById('theme-icon').setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+            if (editor) monaco.editor.setTheme(isDark ? 'vs-dark' : 'vs');
+            lucide.createIcons();
+        });
+
+        // Monaco Init
+        require(['vs/editor/editor.main'], function() {
+            editor = monaco.editor.create(document.getElementById('editor-container'), {
+                value: `function calc() {\n  eval("console.log('danger')");\n}`,
+                language: 'javascript',
+                theme: isDark ? 'vs-dark' : 'vs',
+                automaticLayout: true,
+                minimap: { enabled: false }
+            });
+        });
+
+        // Mock Action
+        function runReview() {
+            const btn = document.getElementById('submit-btn');
+            const status = document.getElementById('status');
+            btn.disabled = true;
+            status.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 inline animate-spin mr-2"></i> Analyzing...`;
+            lucide.createIcons();
+            
+            setTimeout(() => {
+                document.getElementById('results-pane').classList.remove('hidden');
+                document.getElementById('results-pane').classList.add('flex');
+                btn.disabled = false;
+                status.innerHTML = `Ready`;
+            }, 1500);
+        }
+    </script>
+    <script src="js/app.js"></script>
+</body>
+</html>

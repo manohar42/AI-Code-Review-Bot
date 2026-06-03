@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - AI Code Review</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { darkMode: 'class', theme: { extend: { colors: { brand: { 500: '#3b82f6', 600: '#2563eb' } } } } }</script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100 min-h-screen flex flex-col">
+
+    <nav class="p-6">
+        <a href="index.html" class="flex items-center gap-2">
+            <i data-lucide="bot" class="text-brand-500 w-8 h-8"></i>
+            <span class="font-bold text-xl">CodeReview.ai</span>
+        </a>
+    </nav>
+
+    <main class="flex-1 flex items-center justify-center p-6">
+        <div class="w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 p-8">
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-bold">Welcome back</h2>
+                <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Please enter your details to sign in.</p>
+            </div>
+            
+            <form action="dashboard.html" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Email</label>
+                    <input type="email" value="demo@example.com" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500" required>
+                </div>
+                <div>
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block text-sm font-medium">Password</label>
+                        <a href="#" class="text-xs text-brand-600 dark:text-brand-400 hover:underline">Forgot password?</a>
+                    </div>
+                    <input type="password" value="password" class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500" required>
+                </div>
+                <button type="submit" class="w-full bg-brand-600 hover:bg-brand-500 text-white font-semibold py-2.5 rounded-lg mt-2">
+                    Sign In
+                </button>
+            </form>
+            
+            <p class="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
+                Don't have an account? <a href="register.html" class="text-brand-600 dark:text-brand-400 font-medium hover:underline">Sign up</a>
+            </p>
+        </div>
+    </main>
+
+    <script>lucide.createIcons();</script>
+    <script src="js/app.js"></script>
+</body>
+</html>
